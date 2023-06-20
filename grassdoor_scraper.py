@@ -12,7 +12,7 @@ cur = con.cursor()
 
 cur.execute(
     '''CREATE TABLE IF NOT EXISTS listing(
-    product_id INTEGER PRIMARY KEY,
+    product_id INTEGER,
     product_name TEXT NOT NULL,
     brands TEXT,
     category TEXT NOT NULL,
@@ -66,7 +66,7 @@ def scrape_products(url):
 
         has_deal = item['is_deal_available']
 
-        sql = f'''INSERT OR IGNORE INTO listing VALUES(
+        sql = f'''INSERT INTO listing VALUES(
             ?,
             ?,
             ?,
