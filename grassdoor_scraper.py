@@ -10,11 +10,8 @@ ZIPCODE = sys.argv[1]
 con = sqlite3.connect('grass.db')
 cur = con.cursor()
 
-cur.execute('DROP TABLE listing;')
-con.commit()
-
 cur.execute(
-'''CREATE TABLE IF NOT EXISTS listing(
+    '''CREATE TABLE IF NOT EXISTS listing(
     product_id INTEGER PRIMARY KEY,
     product_name TEXT NOT NULL,
     brands TEXT,
@@ -28,6 +25,10 @@ cur.execute(
     thc_percent TEXT,
     has_deal INTEGER DEFAULT 0
 );''')
+
+cur.execute('DELETE FROM listing;')
+con.commit()
+
 
 def scrape_products(url):
     req = requests.get(url)
@@ -99,5 +100,7 @@ def scrape_products(url):
 
     con.commit()
 
+
 scrape_products(f'https://api.grassdoor.com/api/v1/products/{ZIPCODE}')
-scrape_products(f'https://api.grassdoor.com/api/v1/products/schedule/{ZIPCODE}')
+scrape_products(
+    f'https://api.grassdoor.com/api/v1/products/schedule/{ZIPCODE}')
