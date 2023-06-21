@@ -1,102 +1,70 @@
 import requests
 import sqlite3
-import sys
-
-if len(sys.argv) <= 1:
-    print('Missing argument for zipcode.')
-    exit(1)
-ZIPCODE = sys.argv[1]
-
-con = sqlite3.connect('grass.db')
-cur = con.cursor()
-
-cur.execute(
-    '''CREATE TABLE IF NOT EXISTS listing(
-    product_id INTEGER NOT NULL,
-    product_name TEXT NOT NULL,
-    brands TEXT,
-    category TEXT NOT NULL,
-    original_price REAL NOT NULL,
-    price REAL NOT NULL,
-    weight TEXT,
-    strain TEXT,
-    menu TEXT,
-    thc_percent TEXT,
-    has_deal INTEGER DEFAULT 0
-);''')
-
-cur.execute('DELETE FROM listing;')
-con.commit()
 
 
-def scrape_products(url):
-    req = requests.get(url)
-    result = req.json()
+def scrape(zipcode):
+    con = sqlite3.connect('listings.db')
+    cur = con.cursor()
 
-    for item in result['categories']:
-        product_id = item['product_id']
+    def scrape_products(url):
+        req = requests.get(url)
+        result = req.json()
 
-        if not product_id:
-            continue
+        for item in result['categories']:
+            product_id = item['product_id']
 
-        product_name = item['product_name']
-        brands = ', '.join(item['brands'])
-        category = item['category_name']
-        original_price = item['price_without_deal']
-        price = item['price']
-        weight = item['product_weight'] + ' ' + item['product_unit']
-        strain = item['product_strain_type_name']
+            if not product_id:
+                continue
 
-        asap = item['asap']
-        schedule = item['schedule']
+            product_name = item['product_name']
+            brand = ', '.join(item['brands'])
+            category = item['category_name']
+            original_price = item['price_without_deal']
+            price = item['price']
+            weight = item['product_weight'] + ' ' + item['product_unit']
+            strain = item['product_strain_type_name']
 
-        menu = None
-        if asap == 1:
-            menu = 'asap'
-        elif schedule == 1:
-            menu = 'schedule'
+            asap = item['asap']
+            schedule = item['schedule']
 
-        thc_percentage = None
-        for attr in item['product_attributes']:
-            if attr['name'] == 'THC':
-                thc_percentage = attr['value']
-                break
+            website = 'Grassdoor'
+            if asap == 1:
+                website = 'Grassdoor - ASAP'
+            elif schedule == 1:
+                website = 'Grassdoor - Schedule'
 
-        has_deal = item['is_deal_available']
+            sql = f'''INSERT INTO listing VALUES(
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            );'''
 
-        sql = f'''INSERT INTO listing VALUES(
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?
-        );'''
+            values = (
+                website,
+                product_id,
+                product_name,
+                brand,
+                category,
+                original_price,
+                price,
+                weight,
+                strain,
+            )
+            print(values)
+            cur.execute(sql, values)
 
-        values = (
-            product_id,
-            product_name,
-            brands,
-            category,
-            original_price,
-            price,
-            weight,
-            strain,
-            menu,
-            thc_percentage,
-            has_deal,
-        )
-        print(values)
-        cur.execute(sql, values)
+        con.commit()
 
-    con.commit()
+    scrape_products(f'https://api.grassdoor.com/api/v1/products/{zipcode}')
+    scrape_products(
+        f'https://api.grassdoor.com/api/v1/products/schedule/{zipcode}')
 
 
-scrape_products(f'https://api.grassdoor.com/api/v1/products/{ZIPCODE}')
-scrape_products(
-    f'https://api.grassdoor.com/api/v1/products/schedule/{ZIPCODE}')
+if __name__ == '__main__':
+    scrape()
