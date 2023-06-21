@@ -18,8 +18,7 @@ cur.execute(
     category TEXT NOT NULL,
     original_price REAL NOT NULL,
     price REAL NOT NULL,
-    weight REAL,
-    weight_unit TEXT,
+    weight TEXT,
     strain TEXT,
     menu TEXT,
     thc_percent TEXT,
@@ -45,8 +44,7 @@ def scrape_products(url):
         category = item['category_name']
         original_price = item['price_without_deal']
         price = item['price']
-        weight = item['product_weight']
-        weight_unit = item['product_unit']
+        weight = item['product_weight'] + ' ' + item['product_unit']
         strain = item['product_strain_type_name']
 
         asap = item['asap']
@@ -77,7 +75,6 @@ def scrape_products(url):
             ?,
             ?,
             ?,
-            ?,
             ?
         );'''
 
@@ -89,7 +86,6 @@ def scrape_products(url):
             original_price,
             price,
             weight,
-            weight_unit,
             strain,
             menu,
             thc_percentage,
