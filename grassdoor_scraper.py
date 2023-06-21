@@ -12,7 +12,7 @@ cur = con.cursor()
 
 cur.execute(
     '''CREATE TABLE IF NOT EXISTS listing(
-    product_id INTEGER,
+    product_id INTEGER NOT NULL,
     product_name TEXT NOT NULL,
     brands TEXT,
     category TEXT NOT NULL,
