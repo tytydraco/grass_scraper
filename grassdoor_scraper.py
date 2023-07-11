@@ -17,7 +17,10 @@ def scrape(zipcode):
                 continue
 
             product_name = item['product_name']
-            brand = ', '.join(item['brands'])
+            _brand = item['brands']
+            brand = 'N/A'
+            if _brand is not None:
+                brand = ', '.join(_brand)
             category = item['category_name']
             original_price = item['price_without_deal']
             price = item['price']
