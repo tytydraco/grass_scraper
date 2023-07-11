@@ -41,8 +41,10 @@ def scrape():
                 weight = weight.contents[0]
 
             strain = soup.find('div', ['product-type-text'])
-            if strain is not None:
+            if strain is not None and len(strain.contents) > 0:
                 strain = strain.contents[0]
+            else:
+                strain = 'N/A'
 
             sql = f'''INSERT OR IGNORE INTO listing VALUES(
                 ?,
